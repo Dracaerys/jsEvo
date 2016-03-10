@@ -51,15 +51,15 @@
 
 		}
 
-		function getRandomColor() {
-			phi_conj = 0.618033988749895;
+		function getRandomColor() {		  // Gets a random color with a set saturation and 
+			phi_conj = 0.618033988749895; // lightness, so that it isn't too dark.
 			h = Math.random();
 			h += phi_conj;
 			h %= 1;
 			return HSVtoRGB(h, 0.75, 0.95);
-		}
+		} 
 
-		function Cell(speed, d, color, x, y, hasEaten, target) {
+		function Cell(speed, d, color, x, y, hasEaten, target) { // Create Cell object
 			this.speed = speed;
 			this.d = d;
 			this.x = Math.floor(Math.random() * c.width);
@@ -67,7 +67,7 @@
 			this.color = getRandomColor();
 		}
 
-		function Food(rad, x, y, remaining) {
+		function Food(rad, x, y, remaining) { // Create Food object
 			this.rad = rad;
 			this.x = Math.floor(Math.random() * c.width);
 			this.y = Math.floor(Math.random() * c.height);
@@ -83,12 +83,12 @@
 			ctx.stroke();
 		}
 
-		for (i=0; i<10; i++) {    
-			cells[i] = new Cell(Math.floor(Math.random() * 25 + 5), Math.floor(Math.random() * 10 + 10));	// Create cells
+		for (i=0; i<10; i++) { // Create cells   
+			cells[i] = new Cell(Math.floor(Math.random() * 25 + 5), Math.floor(Math.random() * 10 + 10));	
 		}
 		
-		for (i=0; i<5; i++) {    
-			food[i] = new Food(10);	// Create food
+		for (i=0; i<5; i++) { // Create food   
+			food[i] = new Food(10);	
 		}
 
 		function drawFood(foodNum) {
@@ -101,9 +101,9 @@
 			ctx.fill();
 		}
 
-		function move(cellnum) {
+		function move(cellnum) { // Calculates next cell position
 			var cell = cells[cellnum];
-			for (k=0; k<5; k++) {	
+			for (k=0; k<5; k++) {	// Finds closest food to cell
 				var dx = cell.x - food[k].x; 
 				var dy = cell.y - food[k].y;
 				test[k] = Math.sqrt(dx*dx + dy*dy);
@@ -111,8 +111,8 @@
 			}
 			var speed = cell.speed;
 			
-			var dx = cell.x - food[cell.target].x;
-			var dy = cell.y - food[cell.target].y;
+			var dx = cell.x - food[cell.target].x; // TODO: Make the cells' speed constant instead of
+			var dy = cell.y - food[cell.target].y; // inversely proportional to the distance
 
 			var incrementX = dx / speed;
 			var incrementY = dy / speed; 
@@ -123,15 +123,14 @@
 			drawCell(cellnum);
 		}
 
-		function collide(cellnum) {
-			var cell = cells[cellnum];
-			var radius = cell.d / 2;
-			
+		function collide(cellnum) {    // Checks if a cell has touched a food pellet.
+			var cell = cells[cellnum]; // Since the only food a cell can touch is the closest one to it,
+			var radius = cell.d / 2;   // we can check for collision with just its target 
+									   // instead of all the food pellets
 			if (Math.abs(food[cell.target].x - cell.x) <= cell.d + food[cell.target].rad && Math.abs(food[cell.target].y - cell.y) <= cell.d + food[cell.target].rad && cell.hasEaten != true && food[cell.target].remaining < 5) {  
 				cell.hasEaten = true;
 				survivors[food[cell.target].remaining] = cellnum;
 				food[cell.target].remaining++;
-				//console.log(food[0].remaining);
 			}
 		}
 
@@ -144,7 +143,7 @@
 			for (i=0; i < food.length; i++) {
 				drawFood(i);
 			}
-			window.requestAnimationFrame(draw); // Find some alternative.
+			window.requestAnimationFrame(draw); // TODO(?): Find some alternative
 		} 
 
 
