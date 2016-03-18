@@ -25,6 +25,9 @@
 		var food = [];
 		var survivors = [];
 		var test = [];
+		var mutChance = 0.5;
+		var mutSize = 0.1;
+		var foodRemaining = 0;
 		
 		var c = document.getElementById("c");
 		var ctx = c.getContext("2d");
@@ -64,7 +67,7 @@
 			this.d = d;
 			this.x = Math.floor(Math.random() * c.width);
 			this.y = Math.floor(Math.random() * c.height);
-			this.color = getRandomColor();
+			this.color = color;
 		}
 
 		function Food(rad, x, y, remaining) { // Create Food object
@@ -84,7 +87,7 @@
 		}
 
 		for (i=0; i<10; i++) { // Create cells   
-			cells[i] = new Cell(Math.floor(Math.random() * 25 + 5), Math.floor(Math.random() * 10 + 10));	
+			cells[i] = new Cell(Math.floor(Math.random() * 25 + 5), Math.floor(Math.random() * 10 + 10), getRandomColor());	
 		}
 		
 		for (i=0; i<5; i++) { // Create food   
@@ -93,7 +96,7 @@
 
 		function drawFood(foodNum) {
 			ctx.beginPath();
-			ctx.fillStyle = "rgb(0, 255, 0)";
+			ctx.fillStyle = "rgb(0, 0, 0)";                     
 			food[foodNum].rad = 20 - 4 * food[foodNum].remaining;
 			ctx.arc(food[foodNum].x, food[foodNum].y, food[foodNum].rad, 0, 2*Math.PI);
 			ctx.lineWidth = 4;
@@ -122,15 +125,40 @@
 
 			drawCell(cellnum);
 		}
-
+		
+		function mutate(parent, cell) {
+			if (Math.random() <= 0.5) {
+				parent += parent * mutSize;
+			} else {
+				parent -= parent * mutSize;
+			}
+		    return parent;
+		}
+		
+		function nextGeneration(){
+			for (i=0; i<survivors.length; i++) { // Create cells   
+				sp = mutate(survivors[i].speed, cells[i].speed);
+				cells[i] = new Cell(sp, mutate(survivors[i].d, cells[i].d));
+				cells[i+5] = new Cell(sp, mutate(survivors[i].d, cells[i+5].d));
+				console.log(survivors[i].speed + " " + cells[i].speed);
+				//console.log(survivors[i].speed + " " + cells[i+5].speed);
+			}
+			for (i=0; i<5; i++) { // Create food   
+				food[i] = new Food(10);	
+			}
+		}
+			
 		function collide(cellnum) {    // Checks if a cell has touched a food pellet.
 			var cell = cells[cellnum]; // Since the only food a cell can touch is the closest one to it,
 			var radius = cell.d / 2;   // we can check for collision with just its target 
 									   // instead of all the food pellets
-			if (Math.abs(food[cell.target].x - cell.x) <= cell.d + food[cell.target].rad && Math.abs(food[cell.target].y - cell.y) <= cell.d + food[cell.target].rad && cell.hasEaten != true && food[cell.target].remaining < 5) {  
+			if (Math.abs(food[cell.target].x - cell.x) <= cell.d + food[cell.target].rad && Math.abs(food[cell.target].y - cell.y) <= cell.d + food[cell.target].rad && cell.hasEaten != true && foodRemaining < 5) {  
 				cell.hasEaten = true;
-				survivors[food[cell.target].remaining] = cellnum;
-				food[cell.target].remaining++;
+				survivors[foodRemaining] = cells[cellnum];
+				foodRemaining++;
+			} else if (foodRemaining == 5){
+				nextGeneration();
+				foodRemaining = 0;
 			}
 		}
 
@@ -146,8 +174,7 @@
 			window.requestAnimationFrame(draw); // TODO(?): Find some alternative
 		} 
 
-
 		window.requestAnimationFrame(draw);  // Start animation.
-
+		
 </script>
 </body>
