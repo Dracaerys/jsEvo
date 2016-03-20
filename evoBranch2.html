@@ -155,8 +155,8 @@
 		}
 		
 		function nextGeneration(){
-			genCounter++
-			console.log("new gen");
+			genCounter++;
+			console.log(genCounter);
 			for (i=0; i<survivors.length; i++) { // Create cells   
 				//B. removed: sp = mutate(survivors[i].speed, cells[i].speed);
 				cells[i] = new Cell(mutate(survivors[i].speed, cells[i].speed), mutate(survivors[i].d, cells[i].d), mutate(survivors[i].color, cells[i].color));
@@ -199,11 +199,13 @@
 					}
 				} 
 			}
-		document.getElementById("banner").innerHTML = "Generation: " + genCounter;
 		}
 
 		function draw() {
 			ctx.clearRect(0, 0, c.width, c.height); // Clear canvas.
+			ctx.fillStyle = "black";
+			ctx.font = "25px Arial";
+			ctx.fillText("Generation: " + genCounter, 10, 30);
 			for (i=0; i<cells.length; i++) {
 				move(i);
 				collide(i);	
@@ -215,9 +217,8 @@
 		} 
 
 		window.requestAnimationFrame(draw);  // Start animation.
-		console.log("AFDGFGH");
 		
-// Questions: - Where the hell we use "hasEaten" ?
+// Questions: - Where the hell do we use "hasEaten" ?
  	
 //TODO: - speed
 //		- diameter reduces the speed
