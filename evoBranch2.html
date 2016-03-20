@@ -54,7 +54,7 @@
 			return "rgb(" + Math.round(r * 255) + "," + Math.round(g * 255) + "," + Math.round(b * 255) + ")"; 
 
 		}
-
+		
 		function getRandomColor() {		  // Gets a random color with a set saturation and 
 			phi_conj = 0.618033988749895; // lightness, so that it isn't too dark.
 			h = Math.random();
@@ -63,7 +63,7 @@
 			return HSVtoRGB(h, 0.75, 0.95);
 		} 
 
-		function Cell(speed, d, color, x, y, hasEaten, target, cellFitness) { // Create Cell object
+		function Cell(speed, d, color, x, y, hasSelected, target, cellFitness) { // Create Cell object
 			this.speed = speed;
 			this.d = d;
 			this.x = Math.floor(Math.random() * c.width);
@@ -113,7 +113,7 @@
 
 		function move(cellnum) { // Calculates next cell position
 			var cell = cells[cellnum];
-			for (k=0; k<5; k++) {	// Finds closest food to cell
+			for (k=0; k<food.length; k++) {	// Finds closest food to cell
 				var dx = cell.x - food[k].x; 
 				var dy = cell.y - food[k].y;
 				test[k] = Math.sqrt(dx*dx + dy*dy);
@@ -158,31 +158,37 @@
 			for (i=0; i<5; i++) { // Create food   
 				food[i] = new Food(10);	
 			}
-			survivors.splice(0,survivors.length); // Clear survivors array. 
+			console.log(survivors);
+			//survivors.splice(0,survivors.length); // Clear survivors array. 
 		}
 			
 		function collide(cellnum) {    // Checks if a cell has touched a food pellet.
 			var cell = cells[cellnum]; // Since the only food a cell can touch is the closest one to it,
 			var radius = cell.d / 2;   // we can check for collision with just its target 
 	        						   // instead of all the food pellets
-
-			if (Math.abs(food[cell.target].x - cell.x) <= cell.d + food[cell.target].rad && Math.abs(food[cell.target].y - cell.y) <= cell.d + food[cell.target].rad) { 
+			if (cells[cellnum].cellFitness >= maxFitness && cells[cellnum].hasSelected != true) {
+							survivors.push(cells[cellnum]);  // Add the cell to the end of the survivors list.
+							cells[cellnum].hasSelected = true;
+							//cells[cellnum].cellFitness = 0;
+							//nextGeneration();
+							if (survivors.length == 5){
+								nextGeneration();
+							}
+						}
+		
+		if (Math.abs(food[cell.target].x - cell.x) <= cell.d + food[cell.target].rad && Math.abs(food[cell.target].y - cell.y) <= cell.d + food[cell.target].rad) { 
 				cells[cellnum].x = Math.floor(Math.random() * c.height);
 				cells[cellnum].y = Math.floor(Math.random() * c.height);
 				cells[cellnum].cellFitness += food[cells[cellnum].target].foodFitness / cells[cellnum].d; // Find some alternative.
 				food[cells[cellnum].target].foodFitness -= cells[cellnum].cellFitness; // Food's fitness reduces through cell's bites.
+				if (food[cells[cellnum].target].foodFitness <= 0){
+					food.splice(cell.target, 1);
+				}
 				//if (food[cell.target].foodFitness <= 0){
 					//food.splice(cell.target, 1);
 				//}
 			}
-			if (cells[cellnum].cellFitness >= maxFitness) {
-				survivors.push(cells[cellnum]);  // Add the cell to the end of the survivors list.
-				//cells[cellnum].cellFitness = 0;
-				//nextGeneration();
-				if (survivors.length == 5){
-					nextGeneration();
-				}
-			}
+			
 		}
 
 		function draw() {
@@ -203,20 +209,18 @@
 // Questions: - Where the hell we use "hasEaten" ?
  	
 //TODO: - speed
-//	- diameter reduces the speed
-//	- food radius (i broke it) 
-//	- (maybe) a clever alternative to "cellFitness" evaluation (foodFitness / d)
-//	- evaluate fitness => repeat until sufficient fitness is gathered => call nextGeneration()  		
-//				||         \_____________  _____________/    \_________  ________/									
-//				\/                       ||                            ||
-//			1. change the positions into     \/                            \/ 
-//                         (new) random ones	  2. Which is the sufficient      3. Where should I call it?      
-//                              (DONE)            fitness and how it calculated?         (CAN'T REMEMBER WHY 
-//					      (FIXED TO 300 points - NEED TO CHANGE)       I WAS WONDERING, 
-//                                                                                       IT'S IN THE collide(), 
-//										  WHEN survivors LIST IS FULL (5/5))						
+//		- diameter reduces the speed
+//		- food radius (i broke it) 
+//		- (maybe) a clever alternative to "cellFitness" evaluation (foodFitness / d)
+//		- evaluate fitness => repeat until sufficient fitness is gathered => call nextGeneration()  		
+//			   					||		   \_____________  _____________/		 \______  ______/									
+//								\/                       ||                              ||
+//			1. change the positions into                 \/                              \/ 
+//             (new) random ones	        2. Which is the sufficient         3. Where should I call it?      
+//                 (DONE)                    fitness and how it calculated?         (CAN'T REMEMBER WHY 
+//										(FIXED TO 300 points - NEED TO CHANGE)       I WAS WONDERING, 
+//                                                                                  IT'S IN THE collide())
 //
-
-
+//
 </script>
 </body>
