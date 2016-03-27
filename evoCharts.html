@@ -33,7 +33,7 @@
 		<canvas id="c" width="800" height="768" border="1px"></canvas>
 	</div>
 	<div id="chart1">
-		<canvas id="myChart" width="400" height="400"></canvas>
+		<canvas id="myChart" width="800" height="400"></canvas>
 	</div>
 	<script src="Chart.js-master\Chart.js"></script>
 	
@@ -206,9 +206,8 @@
 			console.log(genCounter);
 			for (i=0; i<survivors.length; i++) { // Create cells   
 				//B. removed: sp = mutate(survivors[i].speed, cells[i].speed);
-				cells[i] = new Cell(mutate(survivors[i].speed, cells[i].speed), mutate(survivors[i].d, cells[i].d), mutate(survivors[i].color, cells[i].color));
-				cells[i+cells.length/2] = new Cell(mutate(survivors[i].speed, cells[i].speed), mutate(survivors[i].d, cells[i+cells.length/2].d), mutate(survivors[i].color, cells[i].color));//B. replaced: cells[i] = new Cell(sp, mutate(survivors[i].d, cells[i].d));
-																																								 //cells[i+5] = new Cell(sp, mutate(survivors[i].d, cells[i+5].d));
+				cells[i] = new Cell(mutate(survivors[i].speed, cells[i].speed), mutate(survivors[i].d, cells[i].d), survivors[i].color);
+				cells[i+cells.length/2] = new Cell(mutate(survivors[i].speed, cells[i].speed), mutate(survivors[i].d, cells[i+cells.length/2].d), survivors[i].color); 
 				cells[i].cellFitness = 0;
 			}
 			for (i=0; i<5; i++) { // Create food   
