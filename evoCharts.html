@@ -14,16 +14,16 @@
 		#cellWorld {
 			position: absolute;
 			background-color: #fff;
-			top: 50%;
-			left: 29%;
-			margin: -394px 0 0 -512px;
+			top: 30px;
+			left: 30px;
+			//margin: -394px 0 0 -512px;
 		}
 		#chart1 {
 			position: absolute;
 			background-color: #fff;
-			top: 50%;
-			left: 79%;
-			margin: -394px 0 0 -512px;
+			top: 398px;
+			right: 30px;
+			//margin: -394px 0 0 -512px;
 		}
 	</style>
 </head>
@@ -39,6 +39,28 @@
 	
 	
 	<script>
+		Chart.types.Line.extend({
+			name: "LineAlt",
+			draw: function () {
+				Chart.types.Line.prototype.draw.apply(this, arguments);
+
+				var ctx = this.chart.ctx;
+				ctx.save();
+		        // text alignment and color
+		        ctx.textAlign = "center";
+		        ctx.textBaseline = "bottom";
+		        ctx.fillStyle = this.options.scaleFontColor;
+		        // position
+		        var x = this.scale.xScalePaddingLeft * 0.4;
+		        var y = this.chart.height / 2;
+        		// change origin
+        		ctx.translate(x, y)
+        		// rotate text
+        		ctx.rotate(-90 * Math.PI / 180);
+      			ctx.fillText(this.datasets[0].label, 0, 0);
+    		    ctx.restore();
+    		}
+		});
 
 		var cells = []; 
 		var food = [];
@@ -47,11 +69,10 @@
 		var mutChance = 0.5;
 		var mutSize = 0.1;
 		var foodRemaining = 0;
-		var maxFitness = 30;
+		var maxFitness = 10;
 		var genCounter = 0;
 		var startTime = new Date();
 		
-		console.log("before vars");
 		var c = document.getElementById("c");
 		var ctx = c.getContext("2d");
 		
@@ -60,19 +81,19 @@
 		var ctx2 = document.getElementById("myChart").getContext("2d");
 
 		var data = {
-			labels: ["d"],
+			labels: ["Generation"],
 			datasets: [
-				{
-					label: "Time from previous generation",
-					fillColor: "rgba(151,187,205,0.2)",
-					strokeColor: "rgba(151,187,205,1)",
-					pointColor: "rgba(151,187,205,1)",
-					pointStrokeColor: "#fff",
-					pointHighlightFill: "#fff",
-					pointHighlightStroke: "rgba(220,220,220,1)",
-					data: [1]
-				},
-				
+			{
+				label: "Time",
+				fillColor: "rgba(151,187,205,0.2)",
+				strokeColor: "rgba(151,187,205,1)",
+				pointColor: "rgba(151,187,205,1)",
+				pointStrokeColor: "#fff",
+				pointHighlightFill: "#fff",
+				pointHighlightStroke: "rgba(220,220,220,1)",
+				data: [0]
+			},
+
 			]
 		};
 
@@ -80,8 +101,8 @@
 		var generationChart = new Chart(ctx2).Line(data, {
 			bezierCurve: true,
 			responsive: true,
-			
-			});
+			scaleLabel: "          <%=value%>"
+		});
 		// end of fucking chart--------------------------------------------------------------------------------------------------------------------
 
 		function HSVtoRGB(h, s, v) {
@@ -147,14 +168,13 @@
 
 		function drawFood(foodNum) {
 			ctx.beginPath();
-			ctx.fillStyle = "rgb(0, 0, 0)";                     
+			ctx.fillStyle = "rgb(0, 255, 0)";                     
 			food[foodNum].rad = 20;          			//food[foodNum].rad = 20 - 4 * food[foodNum].remaining;
 			ctx.arc(food[foodNum].x, food[foodNum].y, food[foodNum].rad, 0, 2*Math.PI);
-			ctx.lineWidth = 4;
+			ctx.lineWidth = 5;
 			ctx.stroke();
 			ctx.fill();
 		}
-		console.log("before cells");
 		for (i=0; i<10; i++) { // Create cells   
 			cells[i] = new Cell(Math.floor(Math.random() * 25 + 5), Math.floor(Math.random() * 10 + 10), Math.random());	// B. replaced getRandomColor() with Math.random()		}
 		}
@@ -179,7 +199,7 @@
 
 				var incrementX = dx / speed;
 				var incrementY = dy / speed; 
-			
+
 				cell.x = cell.x - (incrementX / speed);
 				cell.y = cell.y - (incrementY / speed);
 
@@ -195,54 +215,53 @@
 			} else {
 				parent -= parent * mutSize;
 			}
-		    return parent;
+			return parent;
 		}
 		
 		function nextGeneration(){
 			genCounter++;
-			var intervalTime = new Date() - startTime;
+			var intervalTime = (new Date() - startTime) / 1000;
 			generationChart.addData([intervalTime], genCounter.toString());
 			startTime = new Date();
-			console.log(genCounter);
 			for (i=0; i<survivors.length; i++) { // Create cells   
 				//B. removed: sp = mutate(survivors[i].speed, cells[i].speed);
 				cells[i] = new Cell(mutate(survivors[i].speed, cells[i].speed), mutate(survivors[i].d, cells[i].d), mutate(survivors[i].color, cells[i].color));
 				cells[i+cells.length/2] = new Cell(mutate(survivors[i].speed, cells[i].speed), mutate(survivors[i].d, cells[i+cells.length/2].d), mutate(survivors[i].color, cells[i].color));//B. replaced: cells[i] = new Cell(sp, mutate(survivors[i].d, cells[i].d));
 																																								 //cells[i+5] = new Cell(sp, mutate(survivors[i].d, cells[i+5].d));
-				cells[i].cellFitness = 0;
-			}
+																																								 cells[i].cellFitness = 0;
+																																								}
 			for (i=0; i<5; i++) { // Create food   
 				food[i] = new Food(10);	
 			}
-			console.log(survivors);
 			//survivors.splice(0,survivors.length); // Clear survivors array. 
 			survivors = [];
 		}
-			
+
 		function collide(cellnum) {    // Checks if a cell has touched a food pellet.
 			var cell = cells[cellnum]; // Since the only food a cell can touch is the closest one to it,
 			var radius = cell.d / 2;   // we can check for collision with just its target 
 	        						   // instead of all the food pellets
-			if (cells[cellnum].cellFitness >= maxFitness && cells[cellnum].hasSelected != true) {
+	        						   if (cells[cellnum].cellFitness >= maxFitness && cells[cellnum].hasSelected != true) {
 							survivors.push(cells[cellnum]);  // Add the cell to the end of the survivors list.
+							console.log(cells[cellnum]);
 							cells[cellnum].hasSelected = true;
-							//cells[cellnum].cellFitness = 0;
+							cells[cellnum].cellFitness = 0;
 							//nextGeneration();
 							if (survivors.length == 5){
 								nextGeneration();
 							}
 						}
-		
-		if (Math.abs(food[cell.target].x - cell.x) <= cell.d + food[cell.target].rad && Math.abs(food[cell.target].y - cell.y) <= cell.d + food[cell.target].rad) { 
-				cells[cellnum].x = Math.floor(Math.random() * c.height);
-				cells[cellnum].y = Math.floor(Math.random() * c.height);
+
+						if (Math.abs(food[cell.target].x - cell.x) <= cell.d + food[cell.target].rad && Math.abs(food[cell.target].y - cell.y) <= cell.d + food[cell.target].rad) { 
+							cells[cellnum].x = Math.floor(Math.random() * c.height);
+							cells[cellnum].y = Math.floor(Math.random() * c.height);
 				cells[cellnum].cellFitness += food[cells[cellnum].target].foodFitness / cells[cellnum].d; // Find some alternative.
 				food[cells[cellnum].target].foodFitness -= cells[cellnum].cellFitness/10; // Food's fitness reduces through cell's bites.
 				if (food[cells[cellnum].target].foodFitness <= 0){
 					food.splice(cell.target, 1);
 					if (food.length == 0){
 						for (i=0; i<5; i++) { // Create food   
-						food[i] = new Food(10);	
+							food[i] = new Food(10);	
 						}
 					}
 				} 
@@ -267,7 +286,7 @@
 		window.requestAnimationFrame(draw);  // Start animation.
 		
 // Questions: - Where the hell do we use "hasEaten" ?
- 	
+
 //TODO: - speed
 //		- diameter reduces the speed
 //		- food radius (i broke it) 
